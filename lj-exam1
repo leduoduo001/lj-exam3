@@ -1,0 +1,71 @@
+#!/bin/bash
+# Script: lj-exam1
+# Author: LuoJing
+# StudentID: 23310104
+# Description: Create MP3 files by count with cleanup and validation
+# Created: 2026-06-15
+
+set -u
+
+created_files=()
+
+cleanup() {
+    if [ "${#created_files[@]}" -gt 0 ]; then
+        rm -f -- "${created_files[@]}"
+    fi
+}
+
+pause_and_exit() {
+    read -r -n 1 -s -p "Press any key to exit..."
+    echo
+    exit "$1"
+}
+
+trap cleanup EXIT INT TERM
+
+if [ "$#" -ne 1 ]; then
+    echo "Error: exactly one positive integer argument is required."
+    pause_and_exit 1
+fi
+
+case "$1" in
+    ''|*[!0-9]*)
+        echo "Error: argument must be a positive integer."
+        pause_and_exit 1
+        ;;
+    0)
+        echo "Error: argument must be greater than 0."
+        pause_and_exit 1
+        ;;
+esac
+
+n="$1"
+fruit="pitaya"
+
+echo "luojing will create $n files"
+
+cd "$HOME/ljgit" || {
+    echo "Error: cannot enter $HOME/ljgit"
+    pause_and_exit 1
+}
+
+i=1
+while [ "$i" -le "$n" ]; do
+    file_name="${fruit}-${i}.MP3"
+    if [ ! -e "$file_name" ]; then
+        touch -- "$file_name"
+        created_files+=("$file_name")
+    fi
+    i=$((i + 1))
+done
+
+echo "luojing fin"
+printf "New files created in this run:\n"
+if [ "${#created_files[@]}" -eq 0 ]; then
+    echo "None"
+else
+    printf '%s\n' "${created_files[@]}"
+fi
+date '+T2 %F %T'
+
+pause_and_exit 0
