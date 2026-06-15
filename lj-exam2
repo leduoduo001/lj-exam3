@@ -1,0 +1,71 @@
+#!/bin/bash
+# Script: lj-exam2
+# Author: LuoJing
+# StudentID: 23310104
+# Description: Validate student ID and major, then print useradd command
+# Created: 2026-06-15
+
+set -u
+
+pause_and_exit() {
+    read -r -n 1 -s -p "Press any key to exit..."
+    echo
+    exit "$1"
+}
+
+is_valid_student_id() {
+    case "$1" in
+        Z[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]|[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+is_valid_major() {
+    case "$1" in
+        ''|*[!A-Za-z]*)
+            return 1
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+clear
+
+while true; do
+    read -r -p "Enter student ID: " student_id
+    if [ "$student_id" = "q" ]; then
+        pause_and_exit 0
+    fi
+    if is_valid_student_id "$student_id"; then
+        break
+    fi
+    echo "Invalid student ID. Try again or enter q to quit."
+done
+
+while true; do
+    read -r -p "Enter major (letters only): " major
+    if [ "$major" = "q" ]; then
+        pause_and_exit 0
+    fi
+    if is_valid_major "$major"; then
+        break
+    fi
+    echo "Invalid major. Try again or enter q to quit."
+done
+
+if id "$student_id" >/dev/null 2>&1; then
+    echo "User $student_id already exists."
+else
+    echo "User $student_id does not exist."
+    echo "Command to create user:"
+    echo "sudo groupadd $major && sudo useradd -m -g $major $student_id"
+fi
+
+date '+T3 %F %T'
+pause_and_exit 0
